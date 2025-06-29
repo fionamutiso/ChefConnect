@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Custom CSS variables for orange colors */
+:root {
+  --color-orange: #FF7A1A;
+  --color-orange-light: #FFEFE6;
+  --color-orange-dark: #B34700;
+}
+
+/* Custom styles can be added below */

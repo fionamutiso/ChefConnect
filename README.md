@@ -50,10 +50,5 @@ src/
 - **Animations**: Smooth transitions and hover effects
 - **Accessibility**: Built with accessibility best practices
 
-## 📞 Contact
-
-For questions or support, please reach out through the contact form on the website.
-
----
 
 **ChefConnect** - Connecting chefs and clients seamlessly 🍽️

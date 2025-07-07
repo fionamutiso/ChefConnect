@@ -1,14 +1,26 @@
-import { Menu, Search, ChefHat, X } from "lucide-react";
+import { Menu, Search, ChefHat, X, User, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const handleGetStarted = () => {
     navigate('/login');
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const handleDashboard = () => {
+    const path = user?.role === 'chef' ? '/chef-dashboard' : '/client-dashboard';
+    navigate(path);
   };
 
   return (
@@ -57,12 +69,31 @@ export default function Navbar() {
             >
               <Search className="w-5 h-5" />
             </button>
-            <button 
-              onClick={handleGetStarted}
-              className="bg-orange-500 text-white px-6 py-2 rounded-full hover:bg-orange-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg"
-            >
-              Get Started
-            </button>
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <button 
+                  onClick={handleDashboard}
+                  className="flex items-center text-gray-700 hover:text-orange-500 transition-colors duration-200 font-medium"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Dashboard
+                </button>
+                <button 
+                  onClick={handleLogout}
+                  className="flex items-center text-gray-700 hover:text-red-500 transition-colors duration-200 font-medium"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={handleGetStarted}
+                className="bg-orange-500 text-white px-6 py-2 rounded-full hover:bg-orange-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg"
+              >
+                Get Started
+              </button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -123,17 +154,46 @@ export default function Navbar() {
                   Contact
                 </a>
               </li>
-              <li className="pt-4 border-t border-gray-200">
-                <button 
-                  onClick={() => {
-                    handleGetStarted();
-                    setIsMenuOpen(false);
-                  }}
-                  className="w-full bg-orange-500 text-white px-6 py-3 rounded-full hover:bg-orange-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg"
-                >
-                  Get Started
-                </button>
-              </li>
+              {user ? (
+                <>
+                  <li className="pt-4 border-t border-gray-200">
+                    <button 
+                      onClick={() => {
+                        handleDashboard();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full flex items-center justify-center text-gray-700 hover:text-orange-500 transition-colors duration-200 font-medium py-3"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Dashboard
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full flex items-center justify-center text-gray-700 hover:text-red-500 transition-colors duration-200 font-medium py-3"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <li className="pt-4 border-t border-gray-200">
+                  <button 
+                    onClick={() => {
+                      handleGetStarted();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full bg-orange-500 text-white px-6 py-3 rounded-full hover:bg-orange-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg"
+                  >
+                    Get Started
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
         )}

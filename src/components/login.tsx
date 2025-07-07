@@ -1,18 +1,41 @@
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, ChefHat, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || "/";
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login attempt:", formData);
-    // TODO: Implement actual login logic
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const success = await login(formData.email, formData.password);
+      if (success) {
+        // Redirect based on user role or to the page they were trying to access
+        navigate(from, { replace: true });
+      } else {
+        setError("Invalid email or password");
+      }
+    } catch (error) {
+      setError("An error occurred during login");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,12 +141,27 @@ export default function Login() {
               </a>
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+              disabled={isLoading}
+              className="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              Sign In
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Signing In...
+                </>
+              ) : (
+                'Sign In'
+              )}
             </button>
           </form>
 

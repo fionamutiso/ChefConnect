@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, ChefHat, ArrowLeft, User, Phone } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const [userType, setUserType] = useState<"client" | "chef">("client");
   const [formData, setFormData] = useState({
     firstName: "",
@@ -15,14 +18,41 @@ export default function Register() {
     confirmPassword: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { register } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
+      setError("Passwords don't match!");
       return;
     }
-    console.log("Register attempt:", { ...formData, userType });
-    // TODO: Implement actual registration logic
+    
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const success = await register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+        role: userType,
+      });
+      
+      if (success) {
+        // Redirect to appropriate dashboard based on role
+        const redirectPath = userType === 'chef' ? '/chef-dashboard' : '/client-dashboard';
+        navigate(redirectPath, { replace: true });
+      } else {
+        setError("Registration failed. Please try again.");
+      }
+    } catch (error) {
+      setError("An error occurred during registration");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -246,12 +276,27 @@ export default function Register() {
               </span>
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+              disabled={isLoading}
+              className="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              Create Account
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Creating Account...
+                </>
+              ) : (
+                'Create Account'
+              )}
             </button>
           </form>
 
